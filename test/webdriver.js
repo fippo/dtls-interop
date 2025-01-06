@@ -47,8 +47,8 @@ function mapVersion(browser, version) {
   return (versionMap[browser] || {})[version] || version;
 }
 
-async function buildDriver(browser = process.env.BROWSER || 'chrome', options = {version: process.env.BVER}) {
-  const version = mapVersion(options.version);
+async function buildDriver(browser = process.env.BROWSER || 'chrome', options = {version: process.env.BVER, headless: true}) {
+  const version = mapVersion(browser, options.version);
   const platform = puppeteerBrowsers.detectBrowserPlatform();
 
   const buildId = await download(browser, version || 'stable',
@@ -56,9 +56,7 @@ async function buildDriver(browser = process.env.BROWSER || 'chrome', options = 
 
   // Chrome options.
   const chromeOptions = new chrome.Options()
-      .addArguments('allow-insecure-localhost')
-      .addArguments('use-fake-device-for-media-stream')
-      .addArguments('allow-file-access-from-files');
+      .addArguments('use-fake-device-for-media-stream');
   if (options.chromeFlags) {
     options.chromeFlags.forEach((flag) => chromeOptions.addArguments(flag));
   }
@@ -98,6 +96,9 @@ async function buildDriver(browser = process.env.BROWSER || 'chrome', options = 
       }
     });
   }
+if (options.headless && browser === 'chrome') {
+    chromeOptions.addArguments('headless');
+}
 
   // Safari options.
   const safariOptions = new safari.Options();
